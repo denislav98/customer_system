@@ -20,7 +20,7 @@ public class CustomerContact extends BaseEntity {
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    @Column(name = "contact_medium", nullable = false, unique = true)
+    @Column(name = "contact_medium")
     @Enumerated(EnumType.STRING)
     private ContactMedium contactMedium;
 

@@ -9,8 +9,9 @@ import com.amdocs.interview.service.exception.CustomerContactNotFoundException;
 import com.amdocs.interview.service.exception.DuplicateContactMediumException;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 import static com.amdocs.interview.domain.enums.ContactMedium.FAX;
 import static com.amdocs.interview.domain.enums.ContactMedium.PHONE;
@@ -42,22 +43,27 @@ public class CustomerContactService implements ICustomerContactService {
 
     @Override
     public CustomerContact createCustomerContact(Customer customer, CustomerContactDto customerContactDto) {
-        try {
-            CustomerContact customerContact = new CustomerContact();
-            customerContact.setCustomer(customer);
+        CustomerContact customerContact = new CustomerContact();
+        customerContact.setCustomer(customer);
 
-            ContactMedium contactMedium = contactMediumFromString(customerContactDto.getContactMedium());
-            customerContact.setContactMedium(contactMedium);
-
-            String contactDetails = customerContactDto.getContactDetails();
-            validateContactDetailsForMedium(contactDetails, contactMedium);
-            customerContact.setContactDetails(contactDetails);
-
-            return contactRepository.save(customerContact);
-        } catch (DataIntegrityViolationException e) {
-            throw new DuplicateContactMediumException(format(DUPLICATE_CONTACT_MEDIUM_EXCEPTION_MSG,
-                    customerContactDto.getContactMedium()), e.getCause());
+        ContactMedium contactMedium = contactMediumFromString(customerContactDto.getContactMedium());
+        if (isContactMediumPresent(customer, contactMedium)) {
+            throw new DuplicateContactMediumException(
+                    format(DUPLICATE_CONTACT_MEDIUM_EXCEPTION_MSG, contactMedium.name()));
         }
+        customerContact.setContactMedium(contactMedium);
+
+        String contactDetails = customerContactDto.getContactDetails();
+        validateContactDetailsForMedium(contactDetails, contactMedium);
+        customerContact.setContactDetails(contactDetails);
+
+        return contactRepository.save(customerContact);
+    }
+
+    private boolean isContactMediumPresent(Customer customer, ContactMedium contactMedium) {
+        return customer.getCustomerContacts() //
+                .stream() //
+                .anyMatch(contact -> contact.getContactMedium().equals(contactMedium));
     }
 
     private ContactMedium contactMediumFromString(String contactMedium) {
