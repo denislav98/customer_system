@@ -16,7 +16,7 @@ import static org.springframework.http.HttpStatus.*;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<?> badRequestException(IllegalArgumentException ex, WebRequest request) {
+    public ResponseEntity<?> illegalArgumentException(IllegalArgumentException ex, WebRequest request) {
         return new ResponseEntity<>(getErrorDetails(ex, request), BAD_REQUEST);
     }
 

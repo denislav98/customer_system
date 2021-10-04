@@ -14,7 +14,6 @@ import java.util.Optional;
 import static com.amdocs.interview.domain.enums.CustomerCategory.BUSINESS;
 import static com.amdocs.interview.domain.enums.CustomerCategory.RESIDENTIAL;
 import static com.amdocs.interview.domain.enums.LanguageCode.BG;
-import static com.amdocs.interview.web.ModelMapper.toCustomerWithoutContacts;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -37,15 +36,14 @@ public class CustomerService implements ICustomerService {
 
     @Override
     public Customer findCustomerById(Long id, boolean withContacts) {
-        Optional<Customer> customerOptional = withContacts //
+        return getCustomer(id, withContacts)
+                .orElseThrow(() -> new CustomerNotFoundException(format(CUSTOMER_NOT_FOUND_EXCEPTION_MSG, id)));
+    }
+
+    private Optional<Customer> getCustomer(Long id, boolean withContacts) {
+        return withContacts //
                 ? repository.findById(id) //
                 : repository.getCustomerWithoutContacts(id);
-
-        if (!customerOptional.isPresent()) {
-            throw new CustomerNotFoundException(format(CUSTOMER_NOT_FOUND_EXCEPTION_MSG, id));
-        }
-
-        return withContacts ? customerOptional.get() : toCustomerWithoutContacts(customerOptional.get());
     }
 
     @Override

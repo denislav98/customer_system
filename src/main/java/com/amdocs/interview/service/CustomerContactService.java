@@ -1,9 +1,9 @@
 package com.amdocs.interview.service;
 
 import com.amdocs.interview.domain.dto.CustomerContactDto;
-import com.amdocs.interview.domain.enums.ContactMedium;
 import com.amdocs.interview.domain.enity.Customer;
 import com.amdocs.interview.domain.enity.CustomerContact;
+import com.amdocs.interview.domain.enums.ContactMedium;
 import com.amdocs.interview.repository.ICustomerContactRepository;
 import com.amdocs.interview.service.exception.CustomerContactNotFoundException;
 import com.amdocs.interview.service.exception.DuplicateContactMediumException;
@@ -11,8 +11,6 @@ import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 import static com.amdocs.interview.domain.enums.ContactMedium.FAX;
 import static com.amdocs.interview.domain.enums.ContactMedium.PHONE;
@@ -38,13 +36,8 @@ public class CustomerContactService implements ICustomerContactService {
     @Override
     public CustomerContact findCustomerContactByMediumAndDetails(String medium, String details) {
         ContactMedium contactMedium = contactMediumFromString(medium);
-        Optional<CustomerContact> customerContactOptional = contactRepository.findCustomerContactByContactMediumAndContactDetails(contactMedium, details);
-
-        if (!customerContactOptional.isPresent()) {
-            throw new CustomerContactNotFoundException(format(CUSTOMER_CONTACT_NOT_FOUND_EXCEPTION_MSG, medium, details));
-        }
-
-        return customerContactOptional.get();
+        return contactRepository.findCustomerContactByContactMediumAndContactDetails(contactMedium, details)
+                .orElseThrow(() -> new CustomerContactNotFoundException(format(CUSTOMER_CONTACT_NOT_FOUND_EXCEPTION_MSG, medium, details)));
     }
 
     @Override
